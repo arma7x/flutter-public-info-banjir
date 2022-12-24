@@ -158,22 +158,6 @@ class _MyHomePageState extends State<MyHomePage> {
     <String, String>{ "value": "WLP", "name": "Wilayah Persekutuan Labuan", "flag": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Flag_of_Labuan.svg/100px-Flag_of_Labuan.svg.png" },
   ];
 
-  int _counter = 0;
-
-  void _incrementCounter() async {
-    try {
-      final Map<String, dynamic> rivers = await RiverLevel("KEL");
-      print(rivers);
-      final Map<String, dynamic> railfalls = await Railfall("KEL");
-      print(railfalls);
-    } on Exception catch (e) {
-      print('Unknown exception: $e');
-    }
-    setState(() {
-      _counter++;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
