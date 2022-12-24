@@ -9,11 +9,11 @@ void main() {
   runApp(const MyApp());
 }
 
-Future<Map<String, dynamic>> RailFall(String state) async {
+Future<Map<String, dynamic>> Railfall(String state) async {
   try {
     final response = await http.get(Uri.parse("https://api.codetabs.com/v1/proxy?quest=http://publicinfobanjir.water.gov.my/wp-content/themes/shapely/agency/searchresultrainfall.php?state=${state}&district=ALL&station=ALL&language=1&loginStatus=0"));
     if (response.statusCode == 200) {
-      final document = parse(response.body);
+      final DOM.Document document = parse(response.body);
       List<DOM.Element> tables = document.getElementsByTagName("table");
       List<DOM.Element> theads = tables[0].getElementsByTagName('thead');
       List<String> textHeaders = [];
@@ -30,36 +30,35 @@ Future<Map<String, dynamic>> RailFall(String state) async {
         }
       }
       Map<String, dynamic> result = <String, dynamic>{};
-      List<Map<String, dynamic>> railfallsData = [];
+      List<Map<String, dynamic>> rowsData = [];
       List<DOM.Element> tbodys = tables[0].getElementsByTagName('tbody');
       for (var i = 0; i < tbodys[0].children.length; i++) {
         if (tbodys[0].children[i].text.trim() != "") {
           Map<String, dynamic> data = <String, dynamic>{};
           List<String> daily = [];
-          int hIndex = 0;
+          int headerIndex = 0;
           for (var j = 0; j < tbodys[0].children[i].children.length; j++) {
             if (j >= 5 && j <= 10) {
-              daily.add(tbodys[0].children[i].children[j].text.trim().replaceAll(' ', '_'));
+              daily.add(tbodys[0].children[i].children[j].text.trim());
               if (j == 10)
-                hIndex++;
+                headerIndex++;
             } else {
-              data[textHeaders[hIndex]] = tbodys[0].children[i].children[j].text.trim().replaceAll(' ', '_');
-              hIndex++;
+              data[textHeaders[headerIndex]] = tbodys[0].children[i].children[j].text.trim();
+              headerIndex++;
             }
           }
           data[textHeaders[5]] = daily;
-          railfallsData.add(data);
+          rowsData.add(data);
         }
       }
       result["textHeaders"] = textHeaders;
       result["dailyRainfallHeaders"] = dailyRainfallHeaders;
-      result["railfallsData"] = railfallsData;
+      result["data"] = railfallsData;
       return Future<Map<String, dynamic>>.value(result);
     } else {
       throw('Unknown error');
     }
   } on Exception catch (e) {
-    print('Unknown exception: $e');
     rethrow;
   }
 }
@@ -85,7 +84,7 @@ Future<Map<String, dynamic>> RiverLevel(String state) async {
         }
       }
       Map<String, dynamic> result = <String, dynamic>{};
-      List<Map<String, dynamic>> riversData = [];
+      List<Map<String, dynamic>> rowsData = [];
       List<DOM.Element> tbodys = tables[0].getElementsByTagName('tbody');
       for (var i = 0; i < tbodys[0].children.length; i++) {
         if (tbodys[0].children[i].text.trim() != "") {
@@ -99,18 +98,17 @@ Future<Map<String, dynamic>> RiverLevel(String state) async {
             }
           }
           data[textHeaders[8]] = thresholds;
-          riversData.add(data);
+          rowsData.add(data);
         }
       }
       result["textHeaders"] = textHeaders;
       result["thresholdHeaders"] = thresholdHeaders;
-      result["data"] = riversData;
+      result["data"] = rowsData;
       return Future<Map<String, dynamic>>.value(result);
     } else {
       throw('Unknown error');
     }
   } on Exception catch (e) {
-    print('Unknown exception: $e');
     rethrow;
   }
 }
@@ -145,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _incrementCounter() async {
     try {
       RiverLevel("KEL");
-      //final Map<String, dynamic> data = await RailFall("KEL");
+      //final Map<String, dynamic> data = await Railfall("KEL");
       //print(data);
     } on Exception catch (e) {
       print('Unknown exception: $e');
