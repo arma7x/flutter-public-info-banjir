@@ -53,7 +53,7 @@ Future<Map<String, dynamic>> Railfall(String state) async {
       }
       result["textHeaders"] = textHeaders;
       result["dailyRainfallHeaders"] = dailyRainfallHeaders;
-      result["data"] = railfallsData;
+      result["data"] = rowsData;
       return Future<Map<String, dynamic>>.value(result);
     } else {
       throw('Unknown error');
