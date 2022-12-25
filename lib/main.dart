@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:publicinfobanjir/api.dart';
 
@@ -31,20 +32,95 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
+  final TextEditingController textController = TextEditingController();
+  late FocusNode focusTextNode;
+  bool searchInputVisibility = false;
+  Timer? textTimer;
+  List<Map<String, String>> stateList = <Map<String, String>>[];
+
+  void onInput() {
+    textTimer?.cancel();
+    textTimer = Timer(Duration(seconds: 1), () {
+      searching(textController.text.trim().toLowerCase());
+    });
+  }
+
+  void searching(String text) {
+    List<Map<String, String>> temp = <Map<String, String>>[];
+    if (text == "") {
+      temp = [...Api.STATE];
+    } else {
+      for (var s in Api.STATE) {
+        if (s["name"]!.toLowerCase().contains(text))
+          temp.add(s);
+      }
+    }
+    setState(() {
+      stateList = temp;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      stateList = Api.STATE;
+    });
+    focusTextNode = FocusNode();
+    textController.addListener(onInput);
+  }
+
+  @override
+  void dispose() {
+    focusTextNode.dispose();
+    textController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: searchInputVisibility ? TextFormField(
+          controller: textController,
+          focusNode: focusTextNode,
+          decoration: const InputDecoration(
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(),
+          ),
+        ) : Text(widget.title),
+        actions: <Widget>[
+          if (searchInputVisibility) IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () {
+              textController.clear();
+              textTimer?.cancel();
+              searching("");
+              setState(() {
+                searchInputVisibility = false;
+              });
+            },
+          ) else IconButton(
+            icon: const Icon(Icons.search),
+            tooltip: "Show input search",
+            onPressed: () {
+              setState(() {
+                searchInputVisibility = true;
+                focusTextNode.requestFocus();
+              });
+            },
+          ),
+        ]
       ),
       body: Container(
         child: ListView.builder(
-          itemCount: Api.STATE.length,
+          itemCount: stateList.length,
           itemBuilder: (BuildContext _, int index) {
             return ListTile(
-                leading:  Image.network(Api.STATE[index]["flag"]!),
+                leading:  Image.network(stateList[index]["flag"]!),
                 trailing: const Icon(Icons.arrow_forward_ios ),
-                title: Text(Api.STATE[index]["name"]!),
+                title: Text(stateList[index]["name"]!),
                 contentPadding: const EdgeInsets.symmetric(
                     horizontal: 5.0,
                     vertical: 5.0,
@@ -53,7 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) {
-                      return StateReportTabView(Api.STATE[index]["value"]!, Api.STATE[index]["name"]!, Api.STATE[index]["flag"]!);
+                      return StateReportTabView(stateList[index]["value"]!, stateList[index]["name"]!, stateList[index]["flag"]!);
                     }),
                   );
                 }
