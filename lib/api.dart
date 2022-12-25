@@ -5,7 +5,7 @@ import 'package:html/dom.dart' as DOM;
 
 class Api {
 
-  static const List<Map<String, String>> STATE = [
+  static const List<Map<String, String>> STATE_LIST = [
     <String, String>{ "value": "PLS", "name": "Perlis", "flag": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Flag_of_Perlis.svg/100px-Flag_of_Perlis.svg.png" },
     <String, String>{ "value": "KDH", "name": "Kedah", "flag": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Flag_of_Kedah.svg/100px-Flag_of_Kedah.svg.png" },
     <String, String>{ "value": "PNG", "name": "Pulau Pinang", "flag": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Flag_of_Penang_%28Malaysia%29.svg/100px-Flag_of_Penang_%28Malaysia%29.svg.png" },

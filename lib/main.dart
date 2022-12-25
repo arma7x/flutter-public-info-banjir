@@ -48,9 +48,9 @@ class _MyHomePageState extends State<MyHomePage> {
   void searching(String text) {
     List<Map<String, String>> temp = <Map<String, String>>[];
     if (text == "") {
-      temp = [...Api.STATE];
+      temp = [...Api.STATE_LIST];
     } else {
-      for (var s in Api.STATE) {
+      for (var s in Api.STATE_LIST) {
         if (s["name"]!.toLowerCase().contains(text))
           temp.add(s);
       }
@@ -64,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     setState(() {
-      stateList = Api.STATE;
+      stateList = Api.STATE_LIST;
     });
     focusTextNode = FocusNode();
     textController.addListener(onInput);
