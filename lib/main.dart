@@ -88,6 +88,8 @@ class _MyHomePageState extends State<MyHomePage> {
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(),
+            isCollapsed: true,
+            contentPadding: EdgeInsets.all(9),
           ),
         ) : Text(widget.title),
         actions: <Widget>[
