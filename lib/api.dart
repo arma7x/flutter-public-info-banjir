@@ -63,7 +63,8 @@ class Api {
               }
             }
             data[textHeaders[5]] = daily;
-            rowsData.add(data);
+            if (daily.length > 0)
+                rowsData.add(data);
           }
         }
         result["textHeaders"] = textHeaders;
@@ -113,7 +114,8 @@ class Api {
               }
             }
             data[textHeaders[8]] = thresholds;
-            rowsData.add(data);
+            if (thresholds.length > 0)
+                rowsData.add(data);
           }
         }
         result["textHeaders"] = textHeaders;
