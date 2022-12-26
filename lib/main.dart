@@ -273,7 +273,7 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: <Widget>[
                                   Text(result["dailyRainfallHeaders"]![i2]),
-                                  Text(result["data"]![index][result["textHeaders"]![i]][i2]),
+                                  Text(result["data"]![index][result["textHeaders"]![i]][i2] + "mm"),
                                 ]
                               );
                             }).toList()),
@@ -284,7 +284,7 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             Text(result["textHeaders"]![i].replaceAll('_', ' ')),
-                            Text(result["data"]![index][result["textHeaders"]![i]]),
+                            Text(result["data"]![index][result["textHeaders"]![i]] + (i > 5 ? "mm" : "")),
                           ]
                         );
                       }
@@ -389,7 +389,7 @@ class _RiverTabState extends State<RiverTab> with AutomaticKeepAliveClientMixin<
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: <Widget>[
                                   Text(result["thresholdHeaders"]![i2]),
-                                  Text(result["data"]![index][result["textHeaders"]![i]][i2]),
+                                  Text(result["data"]![index][result["textHeaders"]![i]][i2] + "m"),
                                 ]
                               );
                             }).toList()),
@@ -400,7 +400,7 @@ class _RiverTabState extends State<RiverTab> with AutomaticKeepAliveClientMixin<
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             Text(result["textHeaders"]![i].replaceAll('_', ' ')),
-                            Text(result["data"]![index][result["textHeaders"]![i]]),
+                            Text(result["data"]![index][result["textHeaders"]![i]] + (i == 7 ? "m" : "")),
                           ]
                         );
                       }
