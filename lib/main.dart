@@ -201,6 +201,7 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
   bool isLoading = true;
   bool hasError = false;
   String errorMessage = "";
+  Map<String, dynamic> result = <String, dynamic>{};
 
   @override
   bool get wantKeepAlive => true;
@@ -212,7 +213,10 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
       errorMessage = "";
     });
     try {
-      await Api.Railfall(widget.value);
+      Map<String, dynamic> temp = await Api.Railfall(widget.value);
+      setState(() {
+        result = temp;
+      });
     } on Exception catch (e) {
       setState(() {
         hasError = true;
@@ -249,7 +253,48 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
         color: Colors.white,
         backgroundColor: Colors.blue,
         onRefresh: getData,
-        child: isLoading ? TempListView("Fetching data") :  (hasError ? TempListView(errorMessage) : TempListView("Data Ready")),
+        child: isLoading ? TempListView("Fetching data") :  (hasError ? TempListView(errorMessage) : ListView.builder(
+          itemCount: result["data"]!.length,
+          itemBuilder: (BuildContext _, int index) {
+            return Card(
+              color: Colors.grey[200],
+              child: Container(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: new List.generate(result["textHeaders"]!.length,
+                    (i) {
+                      if (result["textHeaders"]![i] == "Daily_Rainfall")
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(result["textHeaders"]![i].replaceAll('_', ' ')),
+                            ...(new List.generate(result["dailyRainfallHeaders"]!.length, (i2) {
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Text(result["dailyRainfallHeaders"]![i2]),
+                                  Text(result["data"]![index][result["textHeaders"]![i]][i2]),
+                                ]
+                              );
+                            }).toList()),
+                          ]
+                        );
+                      else {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Text(result["textHeaders"]![i].replaceAll('_', ' ')),
+                            Text(result["data"]![index][result["textHeaders"]![i]]),
+                          ]
+                        );
+                      }
+                    }
+                  ).toList()
+                )
+              ),
+            );
+          }
+        )),
       )
     );
   }
@@ -272,6 +317,7 @@ class _RiverTabState extends State<RiverTab> with AutomaticKeepAliveClientMixin<
   bool isLoading = true;
   bool hasError = false;
   String errorMessage = "";
+  Map<String, dynamic> result = <String, dynamic>{};
 
   @override
   bool get wantKeepAlive => true;
@@ -283,7 +329,10 @@ class _RiverTabState extends State<RiverTab> with AutomaticKeepAliveClientMixin<
       errorMessage = "";
     });
     try {
-      await Api.RiverLevel(widget.value);
+      Map<String, dynamic> temp = await Api.RiverLevel(widget.value);
+      setState(() {
+        result = temp;
+      });
     } on Exception catch (e) {
       setState(() {
         hasError = true;
@@ -320,7 +369,48 @@ class _RiverTabState extends State<RiverTab> with AutomaticKeepAliveClientMixin<
         color: Colors.white,
         backgroundColor: Colors.blue,
         onRefresh: getData,
-        child: isLoading ? TempListView("Fetching data") :  (hasError ? TempListView(errorMessage) : TempListView("Data Ready")),
+        child: isLoading ? TempListView("Fetching data") :  (hasError ? TempListView(errorMessage) : ListView.builder(
+          itemCount: result["data"]!.length,
+          itemBuilder: (BuildContext _, int index) {
+            return Card(
+              color: Colors.grey[200],
+              child: Container(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: new List.generate(result["textHeaders"]!.length,
+                    (i) {
+                      if (result["textHeaders"]![i] == "Threshold")
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(result["textHeaders"]![i].replaceAll('_', ' ')),
+                            ...(new List.generate(result["thresholdHeaders"]!.length, (i2) {
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Text(result["thresholdHeaders"]![i2]),
+                                  Text(result["data"]![index][result["textHeaders"]![i]][i2]),
+                                ]
+                              );
+                            }).toList()),
+                          ]
+                        );
+                      else {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Text(result["textHeaders"]![i].replaceAll('_', ' ')),
+                            Text(result["data"]![index][result["textHeaders"]![i]]),
+                          ]
+                        );
+                      }
+                    }
+                  ).toList()
+                )
+              ),
+            );
+          }
+        )),
       )
     );
   }
