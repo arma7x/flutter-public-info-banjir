@@ -196,16 +196,60 @@ class RainfallTab extends StatefulWidget {
 
 class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClientMixin<RainfallTab> {
 
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
+
+  bool isLoading = true;
+  bool hasError = false;
+  String errorMessage = "";
+
   @override
   bool get wantKeepAlive => true;
+
+  Future<void> getData() async {
+    setState(() {
+      isLoading = true;
+      hasError = false;
+      errorMessage = "";
+    });
+    try {
+      await Api.Railfall(widget.value);
+    } on Exception catch (e) {
+      setState(() {
+        hasError = true;
+        errorMessage = e.toString();
+      });
+    }
+    setState(() {
+      isLoading = false;
+    });
+    return Future<void>.value(null);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration(milliseconds: 200)).then((_) {
+      _refreshIndicatorKey.currentState?.show();
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshIndicatorKey.currentState?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return new Container(
       color: Colors.white,
-      child: Center(
-        child: Text('RainfallTab ${widget.value}'),
+      child: RefreshIndicator(
+        key: _refreshIndicatorKey,
+        color: Colors.white,
+        backgroundColor: Colors.blue,
+        onRefresh: getData,
+        child: isLoading ? TempListView("Fetching data") :  (hasError ? TempListView(errorMessage) : TempListView("Data Ready")),
       )
     );
   }
@@ -223,17 +267,88 @@ class RiverTab extends StatefulWidget {
 
 class _RiverTabState extends State<RiverTab> with AutomaticKeepAliveClientMixin<RiverTab> {
 
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
+
+  bool isLoading = true;
+  bool hasError = false;
+  String errorMessage = "";
+
   @override
   bool get wantKeepAlive => true;
+
+  Future<void> getData() async {
+    setState(() {
+      isLoading = true;
+      hasError = false;
+      errorMessage = "";
+    });
+    try {
+      await Api.RiverLevel(widget.value);
+    } on Exception catch (e) {
+      setState(() {
+        hasError = true;
+        errorMessage = e.toString();
+      });
+    }
+    setState(() {
+      isLoading = false;
+    });
+    return Future<void>.value(null);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration(milliseconds: 200)).then((_) {
+      _refreshIndicatorKey.currentState?.show();
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshIndicatorKey.currentState?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return new Container(
       color: Colors.white,
-      child: Center(
-        child: Text('RiverTab ${widget.value}'),
+      child: RefreshIndicator(
+        key: _refreshIndicatorKey,
+        color: Colors.white,
+        backgroundColor: Colors.blue,
+        onRefresh: getData,
+        child: isLoading ? TempListView("Fetching data") :  (hasError ? TempListView(errorMessage) : TempListView("Data Ready")),
       )
     );
+  }
+}
+
+class TempListView extends StatelessWidget {
+
+  final String text;
+
+  TempListView(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (ctx, constraints) {
+      return ListView.builder(
+        itemCount: 6,
+        itemBuilder: (BuildContext _, int index) {
+          return Card(
+            color: Colors.grey[200],
+            child: Container(
+              height: (constraints.maxHeight - 50) / 6,
+              child: Center(
+                child: Text(text)
+              )
+            ),
+          );
+        }
+      );
+    });
   }
 }
