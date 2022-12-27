@@ -257,25 +257,24 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
 
   void showReport() {
     print(byDistrict);
+    var sortedKeys = byDistrict.keys.toList(growable:false)
+    ..sort((k1, k2) => byDistrict[k1].toString().compareTo(byDistrict[k2].toString()));
     showModalBottomSheet<void>(
       context: context,
       builder: (BuildContext context) {
         return Container(
-          height: 200,
-          color: Colors.amber,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                const Text('Modal BottomSheet'),
-                ElevatedButton(
-                  child: const Text('Close BottomSheet'),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-          ),
+          padding: EdgeInsets.all(5.0),
+          child: Wrap(
+            children: new List.generate(byDistrict.length, (i) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text(sortedKeys[i]),
+                  Text(byDistrict[sortedKeys[i]].toString() + "mm"),
+                ]
+              );
+            }).toList(),
+          )
         );
       },
     );
