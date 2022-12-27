@@ -258,7 +258,7 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
   void showReport() {
     print(byDistrict);
     var sortedKeys = byDistrict.keys.toList(growable:false)
-    ..sort((k1, k2) => byDistrict[k1].toString().compareTo(byDistrict[k2].toString()));
+    ..sort((k1, k2) => (byDistrict[k1]! - byDistrict[k2]!).toInt());
     showModalBottomSheet<void>(
       context: context,
       builder: (BuildContext context) {
@@ -270,7 +270,7 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Text(sortedKeys[i]),
-                  Text(byDistrict[sortedKeys[i]].toString() + "mm"),
+                  Text(byDistrict[sortedKeys[i]]!.toStringAsFixed(2) + "mm"),
                 ]
               );
             }).toList(),
@@ -301,7 +301,8 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
                 byDistrict[i["District"]] = byDistrict[i["District"]]! + v;
           }
           double v = double?.parse(i[result["textHeaders"]![6]]);
-              byDistrict[i["District"]] = byDistrict[i["District"]]! + v;
+          if (v >= 0)
+            byDistrict[i["District"]] = byDistrict[i["District"]]! + v;
         } on Exception catch (e) {
           print(e);
         }
