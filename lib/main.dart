@@ -349,26 +349,13 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
             return Card(
               color: Colors.grey[200],
               child: Container(
+                padding: EdgeInsets.all(5.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: new List.generate(result["textHeaders"]!.length,
                     (i) {
                       if (result["textHeaders"]![i] == "Daily_Rainfall")
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(result["textHeaders"]![i].replaceAll('_', ' ')),
-                            ...(new List.generate(result["dailyRainfallHeaders"]!.length, (i2) {
-                              return Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Text(result["dailyRainfallHeaders"]![i2]),
-                                  Text(result["data"]![index][result["textHeaders"]![i]][i2] + "mm"),
-                                ]
-                              );
-                            }).toList()),
-                          ]
-                        );
+                        return CollapsibleDailyRainfalls(result["dailyRainfallHeaders"]!, result["data"]![index][result["textHeaders"]![i]]);
                       else {
                         return Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -465,6 +452,7 @@ class _RiverTabState extends State<RiverTab> with AutomaticKeepAliveClientMixin<
             return Card(
               color: Colors.grey[200],
               child: Container(
+                padding: EdgeInsets.all(5.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: new List.generate(result["textHeaders"]!.length,
@@ -530,5 +518,66 @@ class TempListView extends StatelessWidget {
         }
       );
     });
+  }
+}
+
+
+class CollapsibleDailyRainfalls extends StatefulWidget {
+
+  final List<String> headers;
+  final List<String> data;
+
+  CollapsibleDailyRainfalls(this.headers, this.data);
+
+  @override
+  _CollapsibleDailyRainfallsState createState() => new _CollapsibleDailyRainfallsState();
+}
+
+class _CollapsibleDailyRainfallsState extends State<CollapsibleDailyRainfalls> {
+
+  bool visible = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            TextButton(
+              style: ButtonStyle(
+                foregroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+              ),
+              onPressed: () {
+                setState(() {
+                  visible = !visible;
+                });
+              },
+              child: Text("${visible ? 'Hide' : 'Show'} Daily Rainfalls"),
+            ),
+          ],
+        ),
+        if (visible) ...(new List.generate(widget.headers.length, (i) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text(widget.headers[i]),
+              Text(widget.data[i] + "m"),
+            ]
+          );
+        }).toList()),
+      ]
+    );
   }
 }
