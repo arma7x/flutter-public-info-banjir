@@ -213,7 +213,7 @@ class _ReportTabViewState extends State<StateReportTabView> with SingleTickerPro
           tabs: [
             Tab(
               icon: new Icon(Icons.cloud),
-              text: 'Railfall',
+              text: 'Rainfall',
             ),
             Tab(
               icon: new Icon(Icons.water),
@@ -286,7 +286,7 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
       errorMessage = "";
     });
     try {
-      Map<String, dynamic> temp = await Api.Railfall(widget.value);
+      Map<String, dynamic> temp = await Api.Rainfall(widget.value);
       setState(() {
         result = temp;
       });

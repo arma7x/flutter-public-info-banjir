@@ -24,7 +24,7 @@ class Api {
     <String, String>{ "value": "WLP", "name": "Wilayah Persekutuan Labuan", "flag": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Flag_of_Labuan.svg/100px-Flag_of_Labuan.svg.png" },
   ];
 
-  static Future<Map<String, dynamic>> Railfall(String state) async {
+  static Future<Map<String, dynamic>> Rainfall(String state) async {
     try {
       final response = await http.get(Uri.parse("http://publicinfobanjir.water.gov.my/wp-content/themes/shapely/agency/searchresultrainfall.php?state=${state}&district=ALL&station=ALL&language=1&loginStatus=0"));
       if (response.statusCode == 200) {
