@@ -142,7 +142,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class StateReportTabView extends StatelessWidget {
+class StateReportTabView extends StatefulWidget {
 
   final String value;
   final String name;
@@ -150,21 +150,66 @@ class StateReportTabView extends StatelessWidget {
 
   StateReportTabView(this.value, this.name, this.flag);
 
+  @override _ReportTabViewState createState() => _ReportTabViewState();
+}
+
+class _ReportTabViewState extends State<StateReportTabView> with SingleTickerProviderStateMixin {
+
+  Function? showReportCallback;
+
+  late TabController tabController;
+  int _tabIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    tabController = TabController(length: 2, vsync: this);
+    tabController.addListener(() {
+      setState(() {
+        _tabIndex = tabController.index;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    tabController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
       child: new Scaffold(
         appBar: AppBar(
-          title: Text(name),
+          title: Text(widget.name),
+          actions: <Widget>[
+            if (_tabIndex == 0) IconButton(
+              icon: const Icon(Icons.newspaper),
+              tooltip: "Show report",
+              onPressed: () {
+                showReportCallback?.call();
+              },
+            )
+          ]
         ),
         body: TabBarView(
+          controller: tabController,
           children: [
-            new RainfallTab(value),
-            new RiverTab(value),
+            new RainfallTab(widget.value, (Function callback) {
+              showReportCallback = callback;
+            }),
+            new RiverTab(widget.value),
           ],
         ),
         bottomNavigationBar: new TabBar(
+          controller: tabController,
+          onTap: (index) {
+            setState(() {
+              _tabIndex = index;
+            });
+          },
           tabs: [
             Tab(
               icon: new Icon(Icons.cloud),
@@ -189,8 +234,9 @@ class StateReportTabView extends StatelessWidget {
 class RainfallTab extends StatefulWidget {
 
   final String value;
+  final Function showReport;
 
-  RainfallTab(this.value);
+  RainfallTab(this.value, this.showReport);
 
   @override
   _RainfallTabState createState() => new _RainfallTabState();
@@ -204,9 +250,36 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
   bool hasError = false;
   String errorMessage = "";
   Map<String, dynamic> result = <String, dynamic>{};
+  Map<String, double> byDistrict = <String, double>{};
 
   @override
   bool get wantKeepAlive => true;
+
+  void showReport() {
+    print(byDistrict);
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          height: 200,
+          color: Colors.amber,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                const Text('Modal BottomSheet'),
+                ElevatedButton(
+                  child: const Text('Close BottomSheet'),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   Future<void> getData() async {
     setState(() {
@@ -219,6 +292,21 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
       setState(() {
         result = temp;
       });
+      for (var i in result["data"]!) {
+        if (byDistrict.containsKey(i["District"]) == false)
+          byDistrict[i["District"]] = 0;
+        try {
+          for (var j in i["Daily_Rainfall"]) {
+            double v = double?.parse(j);
+              if (v >= 0)
+                byDistrict[i["District"]] = byDistrict[i["District"]]! + v;
+          }
+          double v = double?.parse(i[result["textHeaders"]![6]]);
+              byDistrict[i["District"]] = byDistrict[i["District"]]! + v;
+        } on Exception catch (e) {
+          print(e);
+        }
+      }
     } on Exception catch (e) {
       setState(() {
         hasError = true;
@@ -234,6 +322,7 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
   @override
   void initState() {
     super.initState();
+    widget.showReport(showReport);
     Future.delayed(Duration(milliseconds: 200)).then((_) {
       _refreshIndicatorKey.currentState?.show();
     });
