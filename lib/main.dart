@@ -256,9 +256,8 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
   bool get wantKeepAlive => true;
 
   void showReport() {
-    print(byDistrict);
     var sortedKeys = byDistrict.keys.toList(growable:false)
-    ..sort((k1, k2) => (byDistrict[k1]! - byDistrict[k2]!).toInt());
+    ..sort((k1, k2) => (byDistrict[k2]! - byDistrict[k1]!).toInt());
     showModalBottomSheet<void>(
       context: context,
       builder: (BuildContext context) {
