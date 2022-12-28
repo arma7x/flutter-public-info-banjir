@@ -205,11 +205,6 @@ class _ReportTabViewState extends State<StateReportTabView> with SingleTickerPro
         ),
         bottomNavigationBar: new TabBar(
           controller: tabController,
-          onTap: (index) {
-            setState(() {
-              _tabIndex = index;
-            });
-          },
           tabs: [
             Tab(
               icon: new Icon(Icons.cloud),
@@ -256,6 +251,9 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
   bool get wantKeepAlive => true;
 
   void showReport() {
+    String t1 = result["textHeaders"]![6].substring(result["textHeaders"]![6].indexOf('(') + 1, result["textHeaders"]![6].indexOf(')'));
+    String t2 = result["dailyRainfallHeaders"]![0];
+    String headText = "Total rainfall for 7 consecutive days (${t1} - ${t2}):";
     var sortedKeys = byDistrict.keys.toList(growable:false)
     ..sort((k1, k2) => (byDistrict[k2]! - byDistrict[k1]!).toInt());
     showModalBottomSheet<void>(
@@ -264,15 +262,30 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
         return Container(
           padding: EdgeInsets.all(5.0),
           child: Wrap(
-            children: new List.generate(byDistrict.length, (i) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Text(sortedKeys[i]),
-                  Text(byDistrict[sortedKeys[i]]!.toStringAsFixed(2) + "mm"),
-                ]
-              );
-            }).toList(),
+            children: <Widget>[
+              Center(
+                child: Text(
+                  headText,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+              ),
+              ...(new List.generate(byDistrict.length, (i) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text(
+                      sortedKeys[i],
+                      style: TextStyle(fontSize: 16)
+                    ),
+                    Text(
+                      byDistrict[sortedKeys[i]]!.toStringAsFixed(2) + "mm",
+                      style: TextStyle(fontSize: 16)
+                    ),
+                  ]
+                );
+              }).toList())
+            ],
           )
         );
       },
@@ -360,8 +373,14 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
                         return Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            Text(result["textHeaders"]![i].replaceAll('_', ' ')),
-                            Text(result["data"]![index][result["textHeaders"]![i]] + (i > 5 ? "mm" : "")),
+                            Text(
+                              result["textHeaders"]![i].replaceAll('_', ' '),
+                              style: TextStyle(fontWeight: (i == 6 ? FontWeight.bold : FontWeight.normal))
+                            ),
+                            Text(
+                              result["data"]![index][result["textHeaders"]![i]] + (i > 5 ? "mm" : ""),
+                              style: TextStyle(fontWeight: (i == 6 ? FontWeight.bold : FontWeight.normal))
+                            ),
                           ]
                         );
                       }
@@ -457,28 +476,46 @@ class _RiverTabState extends State<RiverTab> with AutomaticKeepAliveClientMixin<
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: new List.generate(result["textHeaders"]!.length,
                     (i) {
-                      if (result["textHeaders"]![i] == "Threshold")
+                      List<MaterialColor> indicatorColors = [Colors.green, Colors.yellow, Colors.orange, Colors.red];
+                      if (result["textHeaders"]![i] == "Threshold") {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            Text(result["textHeaders"]![i].replaceAll('_', ' ')),
-                            ...(new List.generate(result["thresholdHeaders"]!.length, (i2) {
-                              return Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Text(result["thresholdHeaders"]![i2]),
-                                  Text(result["data"]![index][result["textHeaders"]![i]][i2] + "m"),
-                                ]
+                            // Text(result["textHeaders"]![i].replaceAll('_', ' ')),
+                            SizedBox(width:5, height: 8),
+                            ...(new List.generate(result["thresholdHeaders"]!.length, (j) {
+                              return Container(
+                                padding: EdgeInsets.all(2.0),
+                                color: indicatorColors[j],
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    Text(
+                                      result["thresholdHeaders"]![j],
+                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
+                                    ),
+                                    Text(
+                                      result["data"]![index][result["textHeaders"]![i]][j] + "m",
+                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
+                                    ),
+                                  ]
+                                )
                               );
                             }).toList()),
                           ]
                         );
-                      else {
+                      } else {
                         return Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            Text(result["textHeaders"]![i].replaceAll('_', ' ')),
-                            Text(result["data"]![index][result["textHeaders"]![i]] + (i == 7 ? "m" : "")),
+                            Text(
+                              result["textHeaders"]![i].replaceAll('_', ' '),
+                              style: TextStyle(fontWeight: (i == 7 ? FontWeight.bold : FontWeight.normal))
+                            ),
+                            Text(
+                              result["data"]![index][result["textHeaders"]![i]] + (i == 7 ? "m" : ""),
+                              style: TextStyle(fontWeight: (i == 7 ? FontWeight.bold : FontWeight.normal))
+                            ),
                           ]
                         );
                       }
