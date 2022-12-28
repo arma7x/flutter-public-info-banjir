@@ -156,7 +156,11 @@ class StateReportTabView extends StatefulWidget {
 class _ReportTabViewState extends State<StateReportTabView> with SingleTickerProviderStateMixin {
 
   Function? showReportCallback;
+  Function(String)? filterDistrictCallback;
+  List<String> districts = [];
 
+  String appBarTitle = "";
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
   late TabController tabController;
   int _tabIndex = 0;
 
@@ -168,6 +172,9 @@ class _ReportTabViewState extends State<StateReportTabView> with SingleTickerPro
       setState(() {
         _tabIndex = tabController.index;
       });
+    });
+    setState(() {
+      appBarTitle = widget.name;
     });
   }
 
@@ -182,8 +189,9 @@ class _ReportTabViewState extends State<StateReportTabView> with SingleTickerPro
     return DefaultTabController(
       length: 2,
       child: new Scaffold(
+        key: scaffoldKey,
         appBar: AppBar(
-          title: Text(widget.name),
+          title: Text(appBarTitle),
           actions: <Widget>[
             if (_tabIndex == 0) IconButton(
               icon: const Icon(Icons.wysiwyg),
@@ -196,16 +204,57 @@ class _ReportTabViewState extends State<StateReportTabView> with SingleTickerPro
               icon: const Icon(Icons.filter_alt_rounded),
               tooltip: "Filter by district",
               onPressed: () {
-                showReportCallback?.call();
+                scaffoldKey.currentState!.openEndDrawer();
               },
-            )
+            ) else Container(),
           ]
+        ),
+        endDrawerEnableOpenDragGesture: false,
+        endDrawer: Builder(
+          builder: (_) {
+            return Drawer(
+              child: ListView(
+                children: <Widget>[
+                  ListTile(
+                    leading: Icon(Icons.arrow_right),
+                    title: Text('RALAT'),
+                    onTap: () {
+                      setState(() {
+                        appBarTitle = widget.name;
+                      });
+                      filterDistrictCallback?.call('RALAT');
+                      scaffoldKey.currentState!.closeEndDrawer();
+                    },
+                  ),
+                  ...(new List.generate(districts.length, (i) {
+                    return ListTile(
+                      leading: Icon(Icons.arrow_right),
+                      title: Text(districts[i]),
+                      onTap: () {
+                        setState(() {
+                          appBarTitle = "${widget.name} - ${districts[i]}";
+                        });
+                        filterDistrictCallback?.call(districts[i]);
+                        scaffoldKey.currentState!.closeEndDrawer();
+                      },
+                    );
+                  }).toList()),
+                ]
+              )
+            );
+          },
         ),
         body: TabBarView(
           controller: tabController,
           children: [
             new RainfallTab(widget.value, (Function callback) {
               showReportCallback = callback;
+            }, (Function(String) callback, List<String> _districts) {
+              setState(() {
+                appBarTitle = widget.name;
+                districts = _districts;
+              });
+              filterDistrictCallback = callback;
             }),
             new RiverTab(widget.value),
           ],
@@ -236,9 +285,10 @@ class _ReportTabViewState extends State<StateReportTabView> with SingleTickerPro
 class RainfallTab extends StatefulWidget {
 
   final String value;
-  final Function showReport;
+  final Function(Function) showReport;
+  final Function(Function(String), List<String>) districtCallback;
 
-  RainfallTab(this.value, this.showReport);
+  RainfallTab(this.value, this.showReport, this.districtCallback);
 
   @override
   _RainfallTabState createState() => new _RainfallTabState();
@@ -247,12 +297,13 @@ class RainfallTab extends StatefulWidget {
 class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClientMixin<RainfallTab> {
 
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
+  ScrollController scrollController = ScrollController();
 
   bool isLoading = true;
   bool hasError = false;
   String errorMessage = "";
   Map<String, dynamic> result = <String, dynamic>{};
-  Map<String, dynamic> filtered = <String, dynamic>{};
+  List<Map<String, dynamic>> filtered = [];
   Map<String, double> byDistrict = <String, double>{};
 
   @override
@@ -300,6 +351,24 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
     );
   }
 
+  void filterByDistrict(String district) {
+    if (district == "RALAT") {
+      setState(() {
+        filtered = result["data"]!;
+      });
+    } else {
+      var temp = result["data"]!.where((i) => i["District"] == district).toList();
+      setState(() {
+        filtered = temp;
+      });
+    }
+    scrollController.animateTo(
+      0,
+      duration: Duration(milliseconds: 500),
+      curve: Curves.fastOutSlowIn,
+    );
+  }
+
   Future<void> getData() async {
     setState(() {
       isLoading = true;
@@ -309,7 +378,7 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
     try {
       result = await Api.Rainfall(widget.value);
       setState(() {
-        filtered = result;
+        filtered = result["data"]!;
       });
       for (var i in result["data"]!) {
         if (byDistrict.containsKey(i["District"]) == false)
@@ -327,6 +396,7 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
           print(e);
         }
       }
+      widget.districtCallback(filterByDistrict, byDistrict.keys.toList(growable:false));
     } on Exception catch (e) {
       setState(() {
         hasError = true;
@@ -365,7 +435,8 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
         backgroundColor: Colors.blue,
         onRefresh: getData,
         child: isLoading ? TempListView("Fetching data") :  (hasError ? TempListView(errorMessage) : ListView.builder(
-          itemCount: filtered["data"]!.length,
+          controller: scrollController,
+          itemCount: filtered.length,
           itemBuilder: (BuildContext _, int index) {
             return Card(
               color: Colors.grey[200],
@@ -373,20 +444,20 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
                 padding: EdgeInsets.all(5.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: new List.generate(filtered["textHeaders"]!.length,
+                  children: new List.generate(result["textHeaders"]!.length,
                     (i) {
-                      if (filtered["textHeaders"]![i] == "Daily_Rainfall")
-                        return CollapsibleDailyRainfalls(filtered["dailyRainfallHeaders"]!, filtered["data"]![index][filtered["textHeaders"]![i]]);
+                      if (result["textHeaders"]![i] == "Daily_Rainfall")
+                        return CollapsibleDailyRainfalls(result["dailyRainfallHeaders"]!, filtered[index][result["textHeaders"]![i]]);
                       else {
                         return Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             Text(
-                              filtered["textHeaders"]![i].replaceAll('_', ' '),
+                              result["textHeaders"]![i].replaceAll('_', ' '),
                               style: TextStyle(fontWeight: (i == 6 ? FontWeight.bold : FontWeight.normal))
                             ),
                             Text(
-                              filtered["data"]![index][filtered["textHeaders"]![i]] + (i > 5 ? "mm" : ""),
+                              filtered[index][result["textHeaders"]![i]] + (i > 5 ? "mm" : ""),
                               style: TextStyle(fontWeight: (i == 6 ? FontWeight.bold : FontWeight.normal))
                             ),
                           ]
