@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.arma7x.publicinfobanjir.publicinfobanjir">
    <application
-        android:label="publicinfobanjir"
+        android:label="PublicInfoBanjir"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
