@@ -186,7 +186,7 @@ class _ReportTabViewState extends State<StateReportTabView> with SingleTickerPro
           title: Text(widget.name),
           actions: <Widget>[
             if (_tabIndex == 0) IconButton(
-              icon: const Icon(Icons.newspaper),
+              icon: const Icon(Icons.wysiwyg),
               tooltip: "Show report",
               onPressed: () {
                 showReportCallback?.call();
