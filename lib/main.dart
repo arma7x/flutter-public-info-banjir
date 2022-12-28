@@ -191,6 +191,13 @@ class _ReportTabViewState extends State<StateReportTabView> with SingleTickerPro
               onPressed: () {
                 showReportCallback?.call();
               },
+            ),
+            if (_tabIndex == 0) IconButton(
+              icon: const Icon(Icons.filter_alt_rounded),
+              tooltip: "Filter by district",
+              onPressed: () {
+                showReportCallback?.call();
+              },
             )
           ]
         ),
@@ -245,6 +252,7 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
   bool hasError = false;
   String errorMessage = "";
   Map<String, dynamic> result = <String, dynamic>{};
+  Map<String, dynamic> filtered = <String, dynamic>{};
   Map<String, double> byDistrict = <String, double>{};
 
   @override
@@ -299,9 +307,9 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
       errorMessage = "";
     });
     try {
-      Map<String, dynamic> temp = await Api.Rainfall(widget.value);
+      result = await Api.Rainfall(widget.value);
       setState(() {
-        result = temp;
+        filtered = result;
       });
       for (var i in result["data"]!) {
         if (byDistrict.containsKey(i["District"]) == false)
@@ -357,7 +365,7 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
         backgroundColor: Colors.blue,
         onRefresh: getData,
         child: isLoading ? TempListView("Fetching data") :  (hasError ? TempListView(errorMessage) : ListView.builder(
-          itemCount: result["data"]!.length,
+          itemCount: filtered["data"]!.length,
           itemBuilder: (BuildContext _, int index) {
             return Card(
               color: Colors.grey[200],
@@ -365,20 +373,20 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
                 padding: EdgeInsets.all(5.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: new List.generate(result["textHeaders"]!.length,
+                  children: new List.generate(filtered["textHeaders"]!.length,
                     (i) {
-                      if (result["textHeaders"]![i] == "Daily_Rainfall")
-                        return CollapsibleDailyRainfalls(result["dailyRainfallHeaders"]!, result["data"]![index][result["textHeaders"]![i]]);
+                      if (filtered["textHeaders"]![i] == "Daily_Rainfall")
+                        return CollapsibleDailyRainfalls(filtered["dailyRainfallHeaders"]!, filtered["data"]![index][filtered["textHeaders"]![i]]);
                       else {
                         return Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             Text(
-                              result["textHeaders"]![i].replaceAll('_', ' '),
+                              filtered["textHeaders"]![i].replaceAll('_', ' '),
                               style: TextStyle(fontWeight: (i == 6 ? FontWeight.bold : FontWeight.normal))
                             ),
                             Text(
-                              result["data"]![index][result["textHeaders"]![i]] + (i > 5 ? "mm" : ""),
+                              filtered["data"]![index][filtered["textHeaders"]![i]] + (i > 5 ? "mm" : ""),
                               style: TextStyle(fontWeight: (i == 6 ? FontWeight.bold : FontWeight.normal))
                             ),
                           ]
