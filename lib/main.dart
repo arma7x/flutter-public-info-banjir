@@ -317,6 +317,7 @@ class _RainfallTabState extends State<RainfallTab> with AutomaticKeepAliveClient
     ..sort((k1, k2) => (byDistrict[k2]! - byDistrict[k1]!).toInt());
     showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       builder: (BuildContext context) {
         return Container(
           padding: EdgeInsets.all(5.0),
